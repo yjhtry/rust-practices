@@ -3,6 +3,7 @@ import yargs  from 'yargs';
 import { hideBin }  from 'yargs/helpers';
 
 import { handleGet, handlePost } from './core';
+import { validateBody, validateUrl } from './validate';
 
 
 yargs(hideBin(process.argv))
@@ -12,6 +13,10 @@ yargs(hideBin(process.argv))
         describe: 'The get request url',
         type: 'string',
         demandOption: true
+      }).check((argv) => {
+        validateUrl(argv.url);
+
+        return true;
       })
   }, async (argv) => {
     await handleGet(argv.url);
@@ -28,6 +33,13 @@ yargs(hideBin(process.argv))
         type: 'string',
         demandOption: true,
         array: true
+      })
+      .check((argv) => {
+        validateUrl(argv.url);
+
+        validateBody(argv.body);
+
+        return true;
       })
   }, async (argv) => {
     handlePost(argv.url, argv.body);
