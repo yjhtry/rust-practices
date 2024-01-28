@@ -1,10 +1,12 @@
 mod cli;
+mod console;
 
 use std::collections::HashMap;
 
 use anyhow::Result;
 use clap::Parser;
 use cli::Args;
+use console::print_response;
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -17,10 +19,9 @@ async fn main() -> Result<()> {
 }
 
 async fn handle_get(args: cli::Get) -> Result<()> {
-    let res = reqwest::get(&args.url).await?.text().await?;
+    let res = reqwest::get(&args.url).await?;
 
-    println!("{}", res);
-
+    print_response(res).await;
     Ok(())
 }
 
@@ -35,11 +36,9 @@ async fn handle_post(args: cli::Post) -> Result<()> {
         .post(&args.url)
         .json(&body)
         .send()
-        .await?
-        .text()
         .await?;
 
-    println!("{}", res);
+    print_response(res).await;
 
     Ok(())
 }

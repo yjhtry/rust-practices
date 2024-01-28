@@ -49,8 +49,11 @@ impl FromStr for KvPair {
 
     fn from_str(s: &str) -> Result<Self> {
         let mut split = s.split('=');
-        let key = split.next().unwrap();
-        let value = split.next().unwrap();
+
+        let err = || anyhow::anyhow!("Failed to parse {}", s);
+
+        let key = split.next().ok_or_else(err)?;
+        let value = split.next().ok_or_else(err)?;
 
         Ok(KvPair {
             key: key.into(),
