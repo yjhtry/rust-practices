@@ -8,7 +8,7 @@ fn main() {
         .unwrap();
 
     Command::new("cargo")
-        .args(&["fmt", "--", "src/*.rs"])
+        .args(["fmt", "--", "src/*.rs"])
         .status()
         .expect("cargo fmt failed");
 }

@@ -15,9 +15,7 @@ impl From<&ImageSpec> for String {
     fn from(image_spec: &ImageSpec) -> Self {
         let image_spec = serde_json::to_string(image_spec).unwrap();
 
-        let encode = general_purpose::URL_SAFE_NO_PAD.encode(image_spec);
-
-        encode
+        general_purpose::URL_SAFE_NO_PAD.encode(image_spec)
     }
 }
 
@@ -34,8 +32,8 @@ impl FromStr for ImageSpec {
 }
 
 impl filter::Filter {
-    pub fn to_str(&self) -> Option<&'static str> {
-        match self {
+    pub fn to_str(filter: &Self) -> Option<&'static str> {
+        match filter {
             filter::Filter::Islands => Some("islands"),
             filter::Filter::Marine => Some("marine"),
             filter::Filter::Oceanic => Some("oceanic"),
@@ -106,6 +104,8 @@ mod test {
     fn test_image_spec() {
         let image_spec = super::ImageSpec::new(vec![Spec::new_watermark(10, 20)]);
         let s: String = image_spec.borrow().into();
+
+        println!("{}", s);
 
         assert_eq!(image_spec, s.as_str().parse::<ImageSpec>().unwrap());
     }
