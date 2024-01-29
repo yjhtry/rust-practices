@@ -1,4 +1,6 @@
+mod engine;
 mod pb;
+
 use std::{
     collections::hash_map::DefaultHasher,
     hash::{Hash, Hasher},
@@ -8,6 +10,7 @@ use std::{
 };
 
 use bytes::Bytes;
+use image::ImageOutputFormat;
 use lru::LruCache;
 use pb::*;
 
@@ -22,6 +25,9 @@ use tokio::sync::Mutex;
 use tower::ServiceBuilder;
 use tower_http::add_extension::AddExtensionLayer;
 use tracing::{info, instrument};
+
+use crate::engine::Engine;
+use engine::Photon;
 
 #[derive(serde::Deserialize)]
 struct Params {
@@ -62,14 +68,26 @@ async fn generate(
     Path(Params { spec, url }): Path<Params>,
     Extension(cache): Extension<Cache>,
 ) -> Result<(HeaderMap, Vec<u8>), StatusCode> {
-    let _spec: ImageSpec = spec.as_str().parse().map_err(|_| StatusCode::BAD_REQUEST)?;
+    let spec: ImageSpec = spec.as_str().parse().map_err(|_| StatusCode::BAD_REQUEST)?;
+
     let url: &str = &percent_decode_str(&url).decode_utf8_lossy();
     let data = retrieve_image(url, cache)
         .await
         .map_err(|_| StatusCode::BAD_REQUEST)?;
+
+    // 使用 image engine 处理
+    let mut engine: Photon = data
+        .try_into()
+        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    engine.apply(&spec.specs);
+
+    let image = engine.generate(ImageOutputFormat::Jpeg(85));
+
+    info!("Finished processing: image size {}", image.len());
     let mut headers = HeaderMap::new();
+
     headers.insert("content-type", HeaderValue::from_static("image/jpeg"));
-    Ok((headers, data.to_vec()))
+    Ok((headers, image))
 }
 
 #[instrument(level = "info", skip(cache))]

@@ -1,5 +1,6 @@
 mod abi;
 pub use abi::*;
+
 use anyhow::Error;
 use base64::{engine::general_purpose, Engine};
 use photon_rs::transform::SamplingFilter;
@@ -32,12 +33,12 @@ impl FromStr for ImageSpec {
 }
 
 impl filter::Filter {
-    pub fn to_str(filter: &Self) -> Option<&'static str> {
-        match filter {
+    pub fn to_str(self) -> Option<&'static str> {
+        match self {
+            filter::Filter::Unspecified => None,
+            filter::Filter::Oceanic => Some("oceanic"),
             filter::Filter::Islands => Some("islands"),
             filter::Filter::Marine => Some("marine"),
-            filter::Filter::Oceanic => Some("oceanic"),
-            filter::Filter::Unspecified => None,
         }
     }
 }
@@ -104,8 +105,6 @@ mod test {
     fn test_image_spec() {
         let image_spec = super::ImageSpec::new(vec![Spec::new_watermark(10, 20)]);
         let s: String = image_spec.borrow().into();
-
-        println!("{}", s);
 
         assert_eq!(image_spec, s.as_str().parse::<ImageSpec>().unwrap());
     }
