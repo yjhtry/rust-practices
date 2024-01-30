@@ -7,9 +7,10 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0.79"
-polars = { version = "0.37.0", features = ["json", "lazy"] } # DataFrame 库
+polars = { version = "0.37.0", features = ["json", "lazy", ] } # DataFrame 库
+polars-plan = { version = "0.37.0", features = ["serde"] }
 reqwest = { version = "0.11.23", features = ["rustls-tls", "json"], default-features = false }
-sqlparser = "0.10" # SQL 解析器
+sqlparser = "0.43.1" # SQL 解析器
 tokio = { version = "1.35.1", features = ["fs"] }
 tracing = "0.1.40"
 

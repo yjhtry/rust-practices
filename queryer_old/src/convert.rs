@@ -1,5 +1,6 @@
 use anyhow::{anyhow, Result};
 use polars::prelude::*;
+use polars_plan::prelude::FunctionOptions;
 use sqlparser::ast::{
     BinaryOperator as SqlBinaryOperator, Expr as SqlExpr, Offset as SqlOffset, OrderByExpr, Select,
     SelectItem, SetExpr, Statement, TableFactor, TableWithJoins, Value as SqlValue,
@@ -45,7 +46,7 @@ impl<'a> TryFrom<&'a Statement> for Sql<'a> {
 
                     group_by: _,
                     ..
-                } = match &q.body {
+                } = match &*q.body {
                     SetExpr::Select(statement) => statement.as_ref(),
                     _ => return Err(anyhow!("We only support Select Query at the moment")),
                 };
@@ -97,8 +98,16 @@ impl TryFrom<Expression> for Expr {
                 right: Box::new(Expression(right).try_into()?),
             }),
             SqlExpr::Wildcard => Ok(Self::Wildcard),
-            // SqlExpr::IsNull(expr) => Ok(Self::IsNull(Box::new(Expression(expr).try_into()?))),
-            // SqlExpr::IsNotNull(expr) => Ok(Self::IsNotNull(Box::new(Expression(expr).try_into()?))),
+            SqlExpr::IsNull(expr) => Ok(Expr::Function {
+                input: vec![Expression(expr).try_into()?],
+                function: FunctionExpr::Boolean(BooleanFunction::IsNull),
+                options: FunctionOptions::default(),
+            }),
+            SqlExpr::IsNotNull(expr) => Ok(Expr::Function {
+                input: vec![Expression(expr).try_into()?],
+                function: FunctionExpr::Boolean(BooleanFunction::IsNotNull),
+                options: FunctionOptions::default(),
+            }),
             SqlExpr::Identifier(id) => Ok(Self::Column(Arc::from(id.value.to_string()))),
             SqlExpr::Value(v) => Ok(Self::Literal(Value(v).try_into()?)),
             v => Err(anyhow!("expr {:#?} is not supported", v)),
@@ -144,8 +153,8 @@ impl<'a> TryFrom<Projection<'a>> for Expr {
                 Box::new(Expr::Column(Arc::from(id.to_string()))),
                 Arc::from(alias.to_string()),
             )),
-            SelectItem::QualifiedWildcard(v) => Ok(col(&v.to_string())),
-            SelectItem::Wildcard => Ok(col("*")),
+            SelectItem::QualifiedWildcard(v, _) => Ok(col(&v.to_string())),
+            SelectItem::Wildcard(_) => Ok(col("*")),
             item => Err(anyhow!("projection {} not supported", item)),
         }
     }

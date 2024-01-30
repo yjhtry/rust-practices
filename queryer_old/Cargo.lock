@@ -134,6 +134,9 @@ name = "bitflags"
 version = "2.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ed570934406eb16438a4e976b1b4500774099c13b8cb96eec99f620f05090ddf"
+dependencies = [
+ "serde",
+]
 
 [[package]]
 name = "bumpalo"
@@ -192,6 +195,7 @@ dependencies = [
  "android-tzdata",
  "iana-time-zone",
  "num-traits",
+ "serde",
  "windows-targets 0.52.0",
 ]
 
@@ -650,6 +654,7 @@ checksum = "433de089bd45971eecf4668ee0ee8f4cec17db4f8bd8f7bc3197a6ce37aa7d9b"
 dependencies = [
  "equivalent",
  "hashbrown 0.14.3",
+ "serde",
 ]
 
 [[package]]
@@ -1085,6 +1090,7 @@ dependencies = [
  "polars-error",
  "polars-utils",
  "ryu",
+ "serde",
  "simdutf8",
  "streaming-iterator",
  "strength_reduce",
@@ -1142,6 +1148,7 @@ dependencies = [
  "rand_distr",
  "rayon",
  "regex",
+ "serde",
  "smartstring",
  "thiserror",
  "version_check",
@@ -1187,6 +1194,7 @@ dependencies = [
  "rayon",
  "regex",
  "ryu",
+ "serde",
  "serde_json",
  "simd-json",
  "simdutf8",
@@ -1263,6 +1271,7 @@ dependencies = [
  "polars-utils",
  "rayon",
  "regex",
+ "serde",
  "smartstring",
  "unicode-reverse",
  "version_check",
@@ -1312,6 +1321,7 @@ dependencies = [
  "polars-utils",
  "rayon",
  "regex",
+ "serde",
  "smartstring",
  "strum_macros",
  "version_check",
@@ -1363,6 +1373,7 @@ dependencies = [
  "polars-ops",
  "polars-utils",
  "regex",
+ "serde",
  "smartstring",
 ]
 
@@ -1406,8 +1417,9 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "polars",
+ "polars-plan",
  "reqwest",
- "sqlparser 0.10.0",
+ "sqlparser 0.43.1",
  "tokio",
  "tracing",
  "tracing-subscriber",
@@ -1772,6 +1784,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3fb72c633efbaa2dd666986505016c32c3044395ceaf881518399d2f4127ee29"
 dependencies = [
  "autocfg",
+ "serde",
  "static_assertions",
  "version_check",
 ]
@@ -1794,18 +1807,18 @@ checksum = "6980e8d7511241f8acf4aebddbb1ff938df5eebe98691418c4468d0b72a96a67"
 
 [[package]]
 name = "sqlparser"
-version = "0.10.0"
+version = "0.39.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7dbcb26aebf44a0993c3c95e41d13860131b6cbf52edb2c53230056baa4d733f"
+checksum = "743b4dc2cbde11890ccb254a8fc9d537fa41b36da00de2a1c5e9848c9bc42bd7"
 dependencies = [
  "log",
 ]
 
 [[package]]
 name = "sqlparser"
-version = "0.39.0"
+version = "0.43.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "743b4dc2cbde11890ccb254a8fc9d537fa41b36da00de2a1c5e9848c9bc42bd7"
+checksum = "f95c4bae5aba7cd30bd506f7140026ade63cff5afd778af8854026f9606bf5d4"
 dependencies = [
  "log",
 ]
