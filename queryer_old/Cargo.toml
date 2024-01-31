@@ -1,4 +1,5 @@
-workspace = { members = ["queryer-node"] }
+workspace = { members = ["queryer-node", "queryer-node-napi"] }
+
 [package]
 name = "queryer"
 version = "0.1.0"
