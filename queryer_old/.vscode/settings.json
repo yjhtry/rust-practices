@@ -1,0 +1,6 @@
+{
+  "rust-analyzer.linkedProjects": [
+    "./queryer-tauri/src-tauri/Cargo.toml",
+    "./queryer-tauri/src-tauri/Cargo.toml"
+  ]
+}

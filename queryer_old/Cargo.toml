@@ -1,4 +1,4 @@
-workspace = { members = ["queryer-node", "queryer-node-napi"] }
+workspace = { members = ["queryer-node", "queryer-node-napi","queryer-tauri/src-tauri"] }
 
 [package]
 name = "queryer"
@@ -13,7 +13,7 @@ polars = { version = "0.37.0", features = ["json", "lazy", ] } # DataFrame 库
 polars-plan = { version = "0.37.0", features = ["serde"] }
 reqwest = { version = "0.11.23", features = ["rustls-tls", "json"], default-features = false }
 sqlparser = "0.43.1" # SQL 解析器
-tokio = { version = "1.35.1", features = ["fs"] }
+tokio = { version = "1.35.1", features = ["fs", "full"] }
 tracing = "0.1.40"
 
 [dev-dependencies]
