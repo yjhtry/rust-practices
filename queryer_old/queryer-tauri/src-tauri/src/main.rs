@@ -1,15 +1,21 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-// Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
+#[derive(serde::Serialize)]
+enum OutputType {
+    CSV(String),
+    JSON(serde_json::Value),
+}
+
 #[tauri::command]
-fn query(sql: &str, output: &str) -> String {
+fn query(sql: &str, output: &str) -> OutputType {
     let rt = tokio::runtime::Runtime::new().unwrap();
     let mut data = rt.block_on(async { queryer::query(sql).await.unwrap() });
 
     match output {
-        "csv" => data.to_csv().unwrap(),
-        v => format!("Output type {} not supported", v),
+        "csv" => OutputType::CSV(data.to_csv().unwrap()),
+        "json" => OutputType::JSON(data.to_json().unwrap()),
+        v => OutputType::CSV(format!("Output type {} not supported", v)),
     }
 }
 

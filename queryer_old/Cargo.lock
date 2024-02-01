@@ -2983,6 +2983,7 @@ dependencies = [
  "polars",
  "polars-plan",
  "reqwest",
+ "serde_json",
  "sqlparser 0.43.1",
  "tokio",
  "tracing",

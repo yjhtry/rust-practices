@@ -14,9 +14,9 @@ tauri-build = { version = "1.5", features = [] }
 [dependencies]
 queryer = { path = "../../../queryer_old" }
 tauri = { version = "1.5", features = [ "shell-open" ] }
-serde = { version = "1.0", features = [ "derive" ] }
 serde_json = "1.0"
 tokio = { version = "1.35.1", features = [ "full" ] }
+serde = { version = "1.0.196", features = ["derive"] }
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem

@@ -8,6 +8,7 @@ const testSql = `SELECT location name, total_cases, new_cases, total_deaths, new
 FROM ${url} where new_deaths >= 200 ORDER BY new_cases DESC`
 
 function App() {
+  const [loading, setLoading] = useState(false)
   const [sql, setSql] = useState(testSql)
   const [data, setData] = useState('')
 
@@ -16,16 +17,24 @@ function App() {
   }
 
   const onQuery = async () => {
-    const res: string = await invoke('query', { sql, output: 'csv' })
-    setData(res)
+    setLoading(true)
+    try {
+      const res: string = await invoke('query', { sql, output: 'csv' })
+      setData(res)
+    }
+    finally {
+      setLoading(false)
+    }
   }
 
   return (
-    <div className="px-10">
+    <div className="p-10">
       <Input.TextArea autoSize value={sql} onChange={onInput} />
-      <Button type="primary" onClick={onQuery}>查询</Button>
+      <div className="flex justify-end mt-6">
+        <Button disabled={loading} loading={loading} type="primary" onClick={onQuery}>查询</Button>
+      </div>
       <pre>
-        {data}
+        {JSON.stringify(data, null, 2)}
       </pre>
     </div>
   )

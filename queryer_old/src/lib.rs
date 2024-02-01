@@ -42,6 +42,18 @@ impl DataSet {
         writer.finish(self)?;
         Ok(String::from_utf8(buf)?)
     }
+
+    /// 从 DataSet 转换成 json
+    pub fn to_json(&mut self) -> Result<serde_json::Value> {
+        let mut buf = Vec::new();
+        JsonWriter::new(&mut buf)
+            .with_json_format(JsonFormat::Json)
+            .finish(self)
+            .unwrap();
+
+        let json_string = String::from_utf8(buf)?;
+        Ok(serde_json::from_str(&json_string)?)
+    }
 }
 
 /// 从 from 中获取数据，从 where 中过滤，最后选取需要返回的列
