@@ -2,7 +2,7 @@
 name = "queryer-tauri"
 version = "0.0.0"
 description = "A Tauri App"
-authors = ["you"]
+authors = [ "you" ]
 repository = ""
 edition = "2021"
 
@@ -13,12 +13,12 @@ tauri-build = { version = "1.5", features = [] }
 
 [dependencies]
 queryer = { path = "../../../queryer_old" }
-tauri = { version = "1.5", features = ["shell-open"] }
-serde = { version = "1.0", features = ["derive"] }
+tauri = { version = "1.5", features = [ "shell-open" ] }
+serde = { version = "1.0", features = [ "derive" ] }
 serde_json = "1.0"
-tokio = { version = "1.35.1", features = ["full"] }
+tokio = { version = "1.35.1", features = [ "full" ] }
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem
 # DO NOT REMOVE!!
-custom-protocol = ["tauri/custom-protocol"]
+custom-protocol = [ "tauri/custom-protocol" ]
