@@ -1,21 +1,32 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+use serde_json::Value;
+
 #[derive(serde::Serialize)]
-enum OutputType {
-    CSV(String),
-    JSON(serde_json::Value),
+struct QueryResult {
+    data: serde_json::Value,
+    error: Option<String>,
+}
+
+impl QueryResult {
+    fn new(data: serde_json::Value, error: Option<String>) -> Self {
+        Self { data, error }
+    }
 }
 
 #[tauri::command]
-fn query(sql: &str, output: &str) -> OutputType {
+fn query(sql: &str, output: &str) -> QueryResult {
     let rt = tokio::runtime::Runtime::new().unwrap();
     let mut data = rt.block_on(async { queryer::query(sql).await.unwrap() });
 
     match output {
-        "csv" => OutputType::CSV(data.to_csv().unwrap()),
-        "json" => OutputType::JSON(data.to_json().unwrap()),
-        v => OutputType::CSV(format!("Output type {} not supported", v)),
+        "csv" => QueryResult::new(Value::String(data.to_csv().unwrap()), None),
+        "json" => QueryResult::new(serde_json::to_value(data.to_json().unwrap()).unwrap(), None),
+        v => QueryResult::new(
+            Value::Null,
+            Some(format!("Output type {} not supported", v)),
+        ),
     }
 }
 
