@@ -1,6 +1,6 @@
 pub mod abi;
 
-use abi::{command_request::RequestData, *};
+pub use abi::{command_request::RequestData, *};
 
 impl CommandRequest {
     /// 创建 HSET 命令
