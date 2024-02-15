@@ -1,5 +1,7 @@
 pub mod memory;
 
+pub use memory::MemTable;
+
 use crate::{KvError, Kvpair, Value};
 
 /// 对存储的抽象，我们不关心数据存在哪儿，但需要定义外界如何和存储打交道
@@ -20,7 +22,7 @@ pub trait Storage {
 
 #[cfg(test)]
 mod tests {
-    use self::memory::MemTable;
+    use super::MemTable;
 
     use super::*;
 
@@ -69,8 +71,11 @@ mod tests {
     fn test_get_all(store: impl Storage) {
         store.set("t2", "k1".into(), "v1".into()).unwrap();
         store.set("t2", "k2".into(), "v2".into()).unwrap();
+
         let mut data = store.get_all("t2").unwrap();
+
         data.sort_by(|a, b| a.partial_cmp(b).unwrap());
+
         assert_eq!(
             data,
             vec![

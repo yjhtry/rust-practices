@@ -4,6 +4,12 @@
   ],
   "cSpell.words": [
     "basi",
+    "cmds",
+    "dashmap",
+    "HGET",
+    "HGETALL",
+    "HSET",
+    "mapref",
     "memtable"
   ]
 }
