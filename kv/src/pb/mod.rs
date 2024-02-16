@@ -211,9 +211,13 @@ impl From<KvError> for CommandResponse {
 
 /// 从 KvError 转换成 CommandResponse
 impl From<bool> for CommandResponse {
-    fn from(_: bool) -> Self {
+    fn from(b: bool) -> Self {
         Self {
-            status: StatusCode::OK.as_u16() as _,
+            status: if b {
+                StatusCode::OK.as_u16() as _
+            } else {
+                StatusCode::NOT_FOUND.as_u16() as _
+            },
             ..Default::default()
         }
     }
