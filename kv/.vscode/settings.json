@@ -1,6 +1,7 @@
 {
   "rust-analyzer.linkedProjects": [
     "./Cargo.toml",
+    "./node-binding/Cargo.toml"
   ],
   "cSpell.words": [
     "basi",

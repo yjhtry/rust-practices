@@ -3,7 +3,7 @@ use std::process::Command;
 fn main() {
     prost_build::Config::new()
         .out_dir("src/pb")
-        .type_attribute(".", "#[derive(PartialOrd)]")
+        .type_attribute(".", "#[derive(PartialOrd, serde::Serialize)]")
         // .type_attribute(".", "#[derive(serde::Deserialize, serde::Serialize)]")
         .compile_protos(&["proto/abi.proto"], &["."])
         .unwrap();

@@ -73,6 +73,33 @@ impl From<i64> for Value {
     }
 }
 
+/// 从 i64转换成 Value
+impl From<f64> for Value {
+    fn from(f: f64) -> Self {
+        Self {
+            value: Some(value::Value::Float(f)),
+        }
+    }
+}
+
+/// 从 i64转换成 Value
+impl From<bool> for Value {
+    fn from(b: bool) -> Self {
+        Self {
+            value: Some(value::Value::Bool(b)),
+        }
+    }
+}
+
+/// 从 i64转换成 Value
+impl From<Vec<u8>> for Value {
+    fn from(v: Vec<u8>) -> Self {
+        Self {
+            value: Some(value::Value::Binary(v)),
+        }
+    }
+}
+
 /// 从 Value 转换成 CommandResponse
 impl From<Value> for CommandResponse {
     fn from(v: Value) -> Self {
