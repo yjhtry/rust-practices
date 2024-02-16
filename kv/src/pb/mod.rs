@@ -34,6 +34,62 @@ impl CommandRequest {
             })),
         }
     }
+
+    pub fn new_hdel(table: impl Into<String>, key: impl Into<String>) -> Self {
+        Self {
+            request_data: Some(RequestData::Hdel(Hdel {
+                table: table.into(),
+                key: key.into(),
+            })),
+        }
+    }
+
+    pub fn new_hexist(table: impl Into<String>, key: impl Into<String>) -> Self {
+        Self {
+            request_data: Some(RequestData::Hexist(Hexist {
+                table: table.into(),
+                key: key.into(),
+            })),
+        }
+    }
+
+    /// 创建 HGET 命令
+    pub fn new_hmget(table: impl Into<String>, keys: Vec<impl Into<String>>) -> Self {
+        Self {
+            request_data: Some(RequestData::Hmget(Hmget {
+                table: table.into(),
+                keys: keys.into_iter().map(|k| k.into()).collect(),
+            })),
+        }
+    }
+
+    /// 创建 HGET 命令
+    pub fn new_hmset(table: impl Into<String>, pairs: Vec<Kvpair>) -> Self {
+        Self {
+            request_data: Some(RequestData::Hmset(Hmset {
+                table: table.into(),
+                pairs,
+            })),
+        }
+    }
+
+    pub fn new_hmdel(table: impl Into<String>, keys: Vec<impl Into<String>>) -> Self {
+        Self {
+            request_data: Some(RequestData::Hmdel(Hmdel {
+                table: table.into(),
+                keys: keys.into_iter().map(|k| k.into()).collect(),
+            })),
+        }
+    }
+
+    pub fn new_hmexist(table: impl Into<String>, key: Vec<impl Into<String>>) -> Self {
+        Self {
+            request_data: Some(RequestData::Hmexist(Hmexist {
+                table: table.into(),
+                keys: key.into_iter().map(|k| k.into()).collect(),
+            })),
+        }
+    }
 }
 
 impl Kvpair {
@@ -111,6 +167,17 @@ impl From<Value> for CommandResponse {
     }
 }
 
+/// 从 Vec<Value> 转换成 CommandResponse
+impl From<Vec<Value>> for CommandResponse {
+    fn from(v: Vec<Value>) -> Self {
+        Self {
+            status: StatusCode::OK.as_u16() as _,
+            values: v,
+            ..Default::default()
+        }
+    }
+}
+
 /// 从 Vec<Kvpair> 转换成 CommandResponse
 impl From<Vec<Kvpair>> for CommandResponse {
     fn from(v: Vec<Kvpair>) -> Self {
@@ -139,5 +206,15 @@ impl From<KvError> for CommandResponse {
         }
 
         result
+    }
+}
+
+/// 从 KvError 转换成 CommandResponse
+impl From<bool> for CommandResponse {
+    fn from(_: bool) -> Self {
+        Self {
+            status: StatusCode::OK.as_u16() as _,
+            ..Default::default()
+        }
     }
 }

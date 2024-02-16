@@ -7,6 +7,7 @@
     "basi",
     "cmds",
     "dashmap",
+    "Hdel",
     "HGET",
     "HGETALL",
     "HSET",

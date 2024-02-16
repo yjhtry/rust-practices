@@ -32,6 +32,85 @@ impl CommandService for Hset {
     }
 }
 
+impl CommandService for Hdel {
+    fn execute(self, store: &impl Storage) -> CommandResponse {
+        match store.del(&self.table, &self.key) {
+            Ok(Some(v)) => v.into(),
+            Ok(None) => Value::default().into(),
+            Err(e) => e.into(),
+        }
+    }
+}
+
+impl CommandService for Hexist {
+    fn execute(self, store: &impl Storage) -> CommandResponse {
+        match store.contains(&self.table, &self.key) {
+            Ok(v) => v.into(),
+            Err(e) => e.into(),
+        }
+    }
+}
+
+impl CommandService for Hmexist {
+    fn execute(self, store: &impl Storage) -> CommandResponse {
+        let mut res = false;
+
+        for key in self.keys {
+            match store.contains(&self.table, &key) {
+                Ok(v) => res = res || v,
+                Err(e) => return e.into(),
+            }
+        }
+
+        res.into()
+    }
+}
+
+impl CommandService for Hmget {
+    fn execute(self, store: &impl Storage) -> CommandResponse {
+        let mut res = Vec::new();
+        for key in self.keys {
+            match store.get(&self.table, &key) {
+                Ok(Some(v)) => res.push(v),
+                Ok(None) => res.push(Value::default()),
+                Err(e) => return e.into(),
+            }
+        }
+
+        res.into()
+    }
+}
+
+impl CommandService for Hmset {
+    fn execute(self, store: &impl Storage) -> CommandResponse {
+        let mut res = Vec::new();
+        for kv in self.pairs {
+            match store.set(&self.table, kv.key, kv.value.unwrap_or_default()) {
+                Ok(Some(v)) => res.push(v),
+                Ok(None) => res.push(Value::default()),
+                Err(e) => return e.into(),
+            }
+        }
+        res.into()
+    }
+}
+
+impl CommandService for Hmdel {
+    fn execute(self, store: &impl Storage) -> CommandResponse {
+        let mut res = Vec::new();
+
+        for key in self.keys {
+            match store.del(&self.table, &key) {
+                Ok(Some(v)) => res.push(v),
+                Ok(None) => res.push(Value::default()),
+                Err(e) => return e.into(),
+            }
+        }
+
+        res.into()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -39,6 +118,17 @@ mod tests {
 
     #[test]
     fn hset_should_work() {
+        let store = MemTable::new();
+        let cmd = CommandRequest::new_hset("t1", "hello", "world".into());
+        let res = dispatch(cmd.clone(), &store);
+        assert_res_ok(res, &[Value::default()], &[]);
+
+        let res = dispatch(cmd, &store);
+        assert_res_ok(res, &["world".into()], &[]);
+    }
+
+    #[test]
+    fn hmset_should_work() {
         let store = MemTable::new();
         let cmd = CommandRequest::new_hset("t1", "hello", "world".into());
         let res = dispatch(cmd.clone(), &store);
