@@ -53,11 +53,15 @@ impl CommandService for Hexist {
 
 impl CommandService for Hmexist {
     fn execute(self, store: &impl Storage) -> CommandResponse {
-        let mut res = false;
+        let mut res = true;
 
         for key in self.keys {
             match store.contains(&self.table, &key) {
-                Ok(v) => res = res || v,
+                Ok(true) => {}
+                Ok(false) => {
+                    res = false;
+                    break;
+                }
                 Err(e) => return e.into(),
             }
         }
@@ -169,6 +173,18 @@ mod tests {
     }
 
     #[test]
+    fn hdel_should_work() {
+        let store = MemTable::new();
+        let cmd = CommandRequest::new_hset("score", "u1", 10.into());
+        dispatch(cmd, &store);
+
+        let cmd = CommandRequest::new_hdel("score", "u1");
+        let res = dispatch(cmd, &store);
+
+        assert_res_ok(res, &[10.into()], &[]);
+    }
+
+    #[test]
     fn hmset_should_work() {
         let store = MemTable::new();
         let cmd = CommandRequest::new_hmset(
@@ -220,7 +236,35 @@ mod tests {
     }
 
     #[test]
-    fn hexists_should_work() {
+    fn hmdel_should_work() {
+        let store = MemTable::new();
+        let cmd = CommandRequest::new_hmset(
+            "score",
+            vec![
+                Kvpair::new("u1", 10.into()),
+                Kvpair::new("u2", 8.into()),
+                Kvpair::new("u3", 11.into()),
+            ],
+        );
+
+        dispatch(cmd, &store);
+
+        let cmd = CommandRequest::new_hmdel("score", vec!["u1", "u2", "u3"]);
+        dispatch(cmd, &store);
+
+        let cdm = CommandRequest::new_hmget("score", vec!["u1", "u2", "u3"]);
+
+        let res = dispatch(cdm, &store);
+
+        assert_res_ok(
+            res,
+            &[Value::default(), Value::default(), Value::default()],
+            &[],
+        );
+    }
+
+    #[test]
+    fn hexist_should_work() {
         let store = MemTable::new();
         let s_cmd = CommandRequest::new_hexist("t1", "hello");
         let res = dispatch(s_cmd.clone(), &store);
@@ -233,6 +277,35 @@ mod tests {
         let res = dispatch(s_cmd, &store);
 
         assert_eq!(res.status, 200);
+    }
+
+    #[test]
+    fn hmexist_should_work() {
+        let store = MemTable::new();
+        let cmd = CommandRequest::new_hmset(
+            "score",
+            vec![
+                Kvpair::new("u1", 10.into()),
+                Kvpair::new("u2", 8.into()),
+                Kvpair::new("u3", 11.into()),
+            ],
+        );
+
+        dispatch(cmd, &store);
+
+        let cmd = CommandRequest::new_hmexist("score", vec!["u1", "u2", "u3"]);
+        let res = dispatch(cmd, &store);
+
+        assert_eq!(res.status, 200);
+
+        let cmd = CommandRequest::new_hdel("score", "u1");
+
+        dispatch(cmd, &store);
+
+        let cmd = CommandRequest::new_hmexist("score", vec!["u1", "u2", "u3"]);
+        let res = dispatch(cmd, &store);
+
+        assert_eq!(res.status, 404);
     }
 
     // 从 Request 中得到 Response，目前处理 HGET/HGETALL/HSET
