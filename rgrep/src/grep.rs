@@ -1,11 +1,53 @@
-use std::{fs, path::PathBuf};
+use std::{
+    fmt::{self, Display},
+    fs,
+    path::PathBuf,
+};
 
+use colored::Colorize;
 use glob::glob;
 
 #[derive(Debug)]
 pub struct RGrep {
     pub paths: Vec<PathBuf>,
     pub search: String,
+}
+
+pub struct Output {
+    pub file: String,
+    pub lines: Vec<Line>,
+}
+
+pub struct Line {
+    pub idx: usize,
+    pub line: String,
+}
+
+impl Display for Output {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        writeln!(f, "{}", self.file.red())?;
+
+        for line in &self.lines {
+            writeln!(f, "{}", line)?;
+        }
+
+        Ok(())
+    }
+}
+
+impl Line {
+    pub fn new(idx: usize, line: impl Into<String>) -> Self {
+        Self {
+            idx,
+            line: line.into(),
+        }
+    }
+}
+
+impl Display for Line {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        writeln!(f, "{}: {}", format!("{}", self.idx).green(), self.line)
+    }
 }
 
 impl RGrep {
@@ -16,38 +58,55 @@ impl RGrep {
 
         let paths: Vec<PathBuf> = entries
             .filter_map(Result::ok)
-            .map(|path| pwd.join(path.to_string_lossy().to_string()))
+            .map(|path| pwd.join(path))
             .collect();
 
         Self { paths, search }
     }
 
-    pub fn match_files(&mut self) -> Vec<String> {
-        let mut matched_files = vec![];
+    pub fn match_files(&mut self) -> Vec<Output> {
+        let mut outputs = vec![];
 
         let search = self.search.clone();
         let search = search.as_str();
 
-        for file in self {
-            for line in file.lines() {
+        for (name, content) in self {
+            let mut output = Output {
+                file: name,
+                lines: vec![],
+            };
+
+            for (idx, line) in content.lines().enumerate() {
                 if line.contains(search) {
-                    matched_files.push(line.to_string());
+                    output.lines.push(Line::new(idx + 1, line));
                 }
+            }
+
+            if !output.lines.is_empty() {
+                outputs.push(output);
             }
         }
 
-        matched_files
+        outputs
+    }
+
+    pub fn print(&mut self) {
+        let outputs = self.match_files();
+
+        for output in outputs {
+            println!("{}", output);
+        }
     }
 }
 
 impl Iterator for RGrep {
-    type Item = String;
+    type Item = (String, String);
 
     fn next(&mut self) -> Option<Self::Item> {
         let path = self.paths.pop();
 
         match path {
-            Some(p) => fs::read_to_string(p).ok(),
+            Some(p) => Some((p.display().to_string(), fs::read_to_string(p).unwrap())),
             None => None,
         }
     }
@@ -81,8 +140,10 @@ mod tests {
 
         let mut grep = RGrep::new(args.search, args.file_glob);
 
-        let matches = grep.match_files();
+        let output = grep.match_files();
 
-        println!("{:?}", matches);
+        for o in output {
+            println!("{}", o);
+        }
     }
 }

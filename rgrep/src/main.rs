@@ -7,5 +7,7 @@ use cli::Args;
 fn main() {
     let args = Args::parse();
 
-    println!("{:?}", args);
+    let mut grep = grep::RGrep::new(args.search, args.file_glob);
+
+    grep.print();
 }
