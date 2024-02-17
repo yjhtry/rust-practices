@@ -69,6 +69,7 @@ impl RGrep {
 
         let search = self.search.clone();
         let search = search.as_str();
+        let pattern = regex::Regex::new(search).unwrap();
 
         for (name, content) in self {
             let mut output = Output {
@@ -77,8 +78,11 @@ impl RGrep {
             };
 
             for (idx, line) in content.lines().enumerate() {
-                if line.contains(search) {
-                    output.lines.push(Line::new(idx + 1, line));
+                if pattern.is_match(line) {
+                    output.lines.push(Line::new(
+                        idx + 1,
+                        line.replace(search, &search.green().to_string()),
+                    ));
                 }
             }
 
