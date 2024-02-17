@@ -1,26 +1,60 @@
-import test from 'ava'
+import test from "ava";
 
-import { hGetAll, hget, hset } from '../index.js'
+import { hGetAll, hget, hset } from "../index.js";
 
 
-// Because rust kv lib use memory storage, so we can't test the data persistence
-// Todo rust kv lib support persistent storage
+test("hset should work!", (t) => {
+  let res = hset("set_t1", "name", "test");
 
-test('hget should work!', (t) => {
-  let res = hget('t1', 'name')
+  t.deepEqual(res, {
+    message: "",
+    pairs: [],
+    status: 200,
+    values: [{ value: null }],
+  });
+});
 
-  t.is(res.status, 404)
-})
+test("hget should work!", (t) => {
+  let res = hget("get_t1", "name");
 
-test('hset should work!', (t) => {
-  let res = hset('t1', 'name', 'test')
-  t.is(res.status, 200)
-})
+  t.deepEqual(res, {
+    message: "Not found for table: get_t1, key: name",
+    pairs: [],
+    status: 404,
+    values: [],
+  });
 
-test('hGetAll should work!', (t) => {
-  let res = hGetAll('t1')
+  hset("get_t1", "name", "test");
 
-  console.log(res)
+  res = hget("get_t1", "name");
 
-  t.is(res.status, 200)
-})
+  t.deepEqual(res, {
+    message: "",
+    pairs: [],
+    status: 200,
+    values: [{ value: { String: "test" } }],
+  });
+});
+
+test("hGetAll should work!", (t) => {
+  let res = hGetAll("get_all_t1");
+
+  t.deepEqual(res, { message: "", pairs: [], status: 200, values: [] });
+
+  hset("get_all_t1", "name", "test");
+  hset("get_all_t1", "age", 18);
+
+  res = hGetAll("get_all_t1");
+
+  console.log(JSON.stringify(res, null, 2));
+
+  t.deepEqual(res, {
+    message: "",
+    pairs: [
+      { key: "name", value: { value: { String: "test" } } },
+      { key: "age", value: { value: { Integer: 18 } } },
+    ],
+    status: 200,
+    values: [],
+  });
+});
