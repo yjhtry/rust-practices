@@ -8,8 +8,13 @@
     "cmds",
     "dashmap",
     "Hdel",
+    "Hexist",
     "HGET",
     "HGETALL",
+    "Hmdel",
+    "Hmexist",
+    "Hmget",
+    "Hmset",
     "HSET",
     "mapref",
     "memtable"

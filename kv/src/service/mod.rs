@@ -9,38 +9,33 @@ mod command_service;
 /// 对 Command 的处理的抽象
 pub trait CommandService {
     /// 处理 Command，返回 Response
-    fn execute(self, store: &impl Storage) -> CommandResponse;
+    fn execute(self, store: &Arc<dyn Storage>) -> CommandResponse;
 }
 
 /// Service 数据结构
-pub struct Service<Store = MemTable> {
-    inner: Arc<ServiceInner<Store>>,
+pub struct Service {
+    store: Arc<dyn Storage>,
 }
 
-impl<Store> Clone for Service<Store> {
+impl Clone for Service {
     fn clone(&self) -> Self {
         Self {
-            inner: Arc::clone(&self.inner),
+            store: Arc::clone(&self.store),
         }
     }
 }
 
-/// Service 内部数据结构
-pub struct ServiceInner<Store> {
-    store: Store,
-}
-
-impl<Store: Storage> Service<Store> {
-    pub fn new(store: Store) -> Self {
+impl Service {
+    pub fn new<S: Storage>(store: S) -> Self {
         Self {
-            inner: Arc::new(ServiceInner { store }),
+            store: Arc::new(store),
         }
     }
 
     pub fn execute(&self, cmd: CommandRequest) -> CommandResponse {
         debug!("Got request: {:?}", cmd);
         // TODO: 发送 on_received 事件
-        let res = dispatch(cmd, &self.inner.store);
+        let res = dispatch(cmd, &self.store);
         debug!("Executed response: {:?}", res);
         // TODO: 发送 on_executed 事件
 
@@ -49,7 +44,7 @@ impl<Store: Storage> Service<Store> {
 }
 
 // 从 Request 中得到 Response，目前处理 HGET/HGETALL/HSET
-pub fn dispatch(cmd: CommandRequest, store: &impl Storage) -> CommandResponse {
+pub fn dispatch(cmd: CommandRequest, store: &Arc<dyn Storage>) -> CommandResponse {
     match cmd.request_data {
         Some(RequestData::Hget(param)) => param.execute(store),
         Some(RequestData::Hgetall(param)) => param.execute(store),
