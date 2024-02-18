@@ -32,6 +32,7 @@ impl GrepConfig {
     pub fn match_with(&self, strategy: StrategyFn<Stdout, File>) -> Result<(), GrepError> {
         let regex = Regex::new(&self.pattern)?;
         let files: Vec<_> = glob::glob(&self.glob)?.collect();
+
         files.into_par_iter().for_each(|v| {
             if let Ok(filename) = v {
                 if let Ok(file) = File::open(&filename) {
@@ -69,7 +70,7 @@ pub fn default_strategy<W: Write, R: Read>(
         .join("\n");
 
     if !matches.is_empty() {
-        writer.write(path.display().to_string().green().as_bytes())?;
+        writer.write(format!("{}", path.display().to_string().green()).as_bytes())?;
         writer.write(b"\n")?;
         writer.write(matches.as_bytes())?;
         writer.write(b"\n")?;
@@ -121,7 +122,7 @@ mod tests {
         let result = String::from_utf8(writer).unwrap();
 
         let expected = [
-            String::from("src/main.rs"),
+            format!("{}", String::from("src/main.rs").green()),
             format_line("hello world!", 1, 0..5),
             format_line("hey Yjh!\n", 2, 0..3),
         ];
