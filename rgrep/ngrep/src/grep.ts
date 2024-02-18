@@ -8,7 +8,6 @@ import pc from 'picocolors'
 interface GrepProps {
   pattern: string
   glob: string
-  global: boolean
   ignoreCase: boolean
 }
 
@@ -24,13 +23,11 @@ type Strategy = (params: StrategyParams) => void
 export class Grep {
   pattern: string
   glob: string
-  global: boolean
   ignoreCase: boolean
 
   constructor(props: GrepProps) {
     this.pattern = props.pattern
     this.glob = props.glob
-    this.global = props.global
     this.ignoreCase = props.ignoreCase
   }
 
@@ -47,6 +44,8 @@ export class Grep {
     const files = await glob(this.glob)
     const writer = process.stdout
 
+    // TODO optimize this with parallel execution
+    // problem: currently, the writer is shared among all the files, so the output is mixed
     for (const path of files) {
       const reader = fs.createReadStream(path)
 
@@ -108,7 +107,7 @@ function formatLine({
 }) {
   const before = line.slice(0, start)
   const after = line.slice(start + match.length)
-  const prefix = `${' '.repeat(6)}${pc.blue(lineNumber)}:${pc.cyan(before.length + 1)}${' '.repeat(2)}`
+  const prefix = `${' '.repeat(4)}${pc.blue(lineNumber)}:${pc.cyan(before.length + 1)}${' '}`
   const content = `${before}${pc.red(match)}${after}`.replaceAll(match, pc.red(match))
 
   return `${prefix}${content}`

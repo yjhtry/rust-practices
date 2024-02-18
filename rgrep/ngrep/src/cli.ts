@@ -17,12 +17,6 @@ yargs(hideBin(process.argv))
       type: 'string',
       required: true,
     },
-    global: {
-      describe: 'Use global search',
-      type: 'boolean',
-      default: false,
-      alias: 'g',
-    },
     ignoreCase: {
       describe: 'Ignore case',
       type: 'boolean',
