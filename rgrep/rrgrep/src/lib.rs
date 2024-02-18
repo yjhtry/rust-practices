@@ -36,7 +36,7 @@ impl GrepConfig {
         files.into_par_iter().for_each(|v| {
             if let Ok(filename) = v {
                 if let Ok(file) = File::open(&filename) {
-                    let reader = BufReader::new(file);
+                    let reader: BufReader<File> = BufReader::new(file);
                     let mut stdout = io::stdout();
                     if let Err(e) = strategy(filename.as_path(), reader, &regex, &mut stdout) {
                         println!("Internal error: {:?}", e);
