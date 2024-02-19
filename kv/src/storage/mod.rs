@@ -1,6 +1,8 @@
 pub mod memory;
+mod sleddb;
 
 pub use memory::MemTable;
+pub use sleddb::SledTable;
 
 use crate::{KvError, Kvpair, Value};
 
@@ -50,38 +52,21 @@ impl From<(String, Value)> for Kvpair {
 
 #[cfg(test)]
 mod tests {
-    use super::MemTable;
-
     use super::*;
-
-    #[test]
-    fn memtable_basic_interface_should_work() {
-        let store = MemTable::new();
-        test_basi_interface(store);
-    }
-
-    #[test]
-    fn memtable_get_all_should_work() {
-        let store = MemTable::new();
-        test_get_all(store);
-    }
-
-    #[test]
-    fn get_iter_should_work() {
-        let store = MemTable::new();
-        test_get_iter(store);
-    }
 
     fn test_basi_interface(store: impl Storage) {
         // 第一次 set 会创建 table，插入 key 并返回 None（之前没值）
         let v = store.set("t1", "hello".into(), "world".into());
+
         assert!(v.unwrap().is_none());
         // 再次 set 同样的 key 会更新，并返回之前的值
         let v1 = store.set("t1", "hello".into(), "world1".into());
+
         assert_eq!(v1, Ok(Some("world".into())));
 
         // get 存在的 key 会得到最新的值
         let v = store.get("t1", "hello");
+
         assert_eq!(v, Ok(Some("world1".into())));
 
         // get 不存在的 key 或者 table 会得到 None
@@ -95,6 +80,7 @@ mod tests {
 
         // del 存在的 key 返回之前的值
         let v = store.del("t1", "hello");
+
         assert_eq!(v, Ok(Some("world1".into())));
 
         // del 不存在的 key 或 table 返回 None
@@ -134,5 +120,54 @@ mod tests {
                 Kvpair::new("k2", "v2".into())
             ]
         )
+    }
+
+    mod memory_table {
+        use super::*;
+
+        #[test]
+        fn memtable_basic_interface_should_work() {
+            let store = MemTable::new();
+            test_basi_interface(store);
+        }
+
+        #[test]
+        fn memtable_get_all_should_work() {
+            let store = MemTable::new();
+            test_get_all(store);
+        }
+
+        #[test]
+        fn get_iter_should_work() {
+            let store = MemTable::new();
+            test_get_iter(store);
+        }
+    }
+
+    mod sled_table {
+
+        use super::*;
+
+        #[test]
+        fn sled_basic_interface_should_work() {
+            test_basi_interface(get_sled_store());
+        }
+
+        #[test]
+        fn sled_get_all_should_work() {
+            test_get_all(get_sled_store());
+        }
+
+        #[test]
+        fn sled_get_iter_should_work() {
+            test_get_iter(get_sled_store());
+        }
+
+        fn get_sled_store() -> SledTable {
+            let config = sled::Config::new().temporary(true);
+            let db = config.open().unwrap();
+
+            SledTable::new(db)
+        }
     }
 }

@@ -25,4 +25,7 @@ pub enum KvError {
 
     #[error("Internal error: {0}")]
     Internal(String),
+
+    #[error("Sled error: {0}")]
+    SledError(#[from] sled::Error),
 }

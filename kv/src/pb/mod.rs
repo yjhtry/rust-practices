@@ -2,6 +2,7 @@ pub mod abi;
 
 pub use abi::{command_request::RequestData, *};
 use http::StatusCode;
+use prost::Message;
 
 use crate::KvError;
 
@@ -138,6 +139,14 @@ impl From<f64> for Value {
     }
 }
 
+impl TryFrom<&[u8]> for Value {
+    type Error = KvError;
+
+    fn try_from(s: &[u8]) -> Result<Self, Self::Error> {
+        Value::decode(s).map_err(|e| e.into())
+    }
+}
+
 /// 从 i64转换成 Value
 impl From<bool> for Value {
     fn from(b: bool) -> Self {
@@ -152,6 +161,14 @@ impl From<Vec<u8>> for Value {
     fn from(v: Vec<u8>) -> Self {
         Self {
             value: Some(value::Value::Binary(v)),
+        }
+    }
+}
+
+impl From<sled::IVec> for Value {
+    fn from(v: sled::IVec) -> Self {
+        Self {
+            value: Some(value::Value::Binary(v.to_vec())),
         }
     }
 }
