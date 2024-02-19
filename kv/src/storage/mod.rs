@@ -20,6 +20,34 @@ pub trait Storage: Send + Sync + 'static {
     fn get_iter(&self, table: &str) -> Result<Box<dyn Iterator<Item = Kvpair>>, KvError>;
 }
 
+pub struct StorageIter<T> {
+    pub data: T,
+}
+
+impl<T> StorageIter<T> {
+    pub fn new(data: T) -> Self {
+        Self { data }
+    }
+}
+
+impl<T> Iterator for StorageIter<T>
+where
+    T: Iterator,
+    T::Item: Into<Kvpair>,
+{
+    type Item = Kvpair;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.data.next().map(|v| v.into())
+    }
+}
+
+impl From<(String, Value)> for Kvpair {
+    fn from(v: (String, Value)) -> Self {
+        Kvpair::new(v.0, v.1)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::MemTable;
@@ -36,6 +64,12 @@ mod tests {
     fn memtable_get_all_should_work() {
         let store = MemTable::new();
         test_get_all(store);
+    }
+
+    #[test]
+    fn get_iter_should_work() {
+        let store = MemTable::new();
+        test_get_iter(store);
     }
 
     fn test_basi_interface(store: impl Storage) {
@@ -85,17 +119,20 @@ mod tests {
         )
     }
 
-    // fn test_get_iter(store: impl Storage) {
-    //     store.set("t2", "k1".into(), "v1".into()).unwrap();
-    //     store.set("t2", "k2".into(), "v2".into()).unwrap();
-    //     let mut data: Vec<_> = store.get_iter("t2").unwrap().collect();
-    //     data.sort_by(|a, b| a.partial_cmp(b).unwrap());
-    //     assert_eq!(
-    //         data,
-    //         vec![
-    //             Kvpair::new("k1", "v1".into()),
-    //             Kvpair::new("k2", "v2".into())
-    //         ]
-    //     )
-    // }
+    fn test_get_iter(store: impl Storage) {
+        store.set("t2", "k1".into(), "v1".into()).unwrap();
+        store.set("t2", "k2".into(), "v2".into()).unwrap();
+
+        let mut data: Vec<_> = store.get_iter("t2").unwrap().collect();
+
+        data.sort_by(|a, b| a.partial_cmp(b).unwrap());
+
+        assert_eq!(
+            data,
+            vec![
+                Kvpair::new("k1", "v1".into()),
+                Kvpair::new("k2", "v2".into())
+            ]
+        )
+    }
 }
