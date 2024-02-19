@@ -202,3 +202,11 @@ pub fn assert_res_error(res: CommandResponse, code: u32, msg: &str) {
     assert_eq!(res.values, &[]);
     assert_eq!(res.pairs, &[]);
 }
+
+#[cfg(test)]
+pub fn get_sled_store() -> SledTable {
+    let config = sled::Config::new().temporary(true);
+    let db = config.open().unwrap();
+
+    SledTable::new(db)
+}

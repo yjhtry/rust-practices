@@ -122,9 +122,147 @@ mod tests {
     use super::*;
     use crate::command_request::RequestData;
 
-    #[test]
-    fn hset_should_work() {
-        let store: Arc<dyn Storage> = Arc::new(MemTable::new());
+    mod memory {
+        use super::*;
+
+        #[test]
+        fn memory_hset_should_work() {
+            let store: Arc<dyn Storage> = Arc::new(MemTable::new());
+            test_hset(store);
+        }
+
+        #[test]
+        fn memory_hget_should_work() {
+            let store: Arc<dyn Storage> = Arc::new(MemTable::new());
+            test_hget(store);
+        }
+
+        #[test]
+        fn memory_hget_with_non_exist_key_should_return_404() {
+            let store: Arc<dyn Storage> = Arc::new(MemTable::new());
+            test_hget_with_404(store);
+        }
+
+        #[test]
+        fn memory_hgetall_should_work() {
+            let store: Arc<dyn Storage> = Arc::new(MemTable::new());
+            test_hgetall(store);
+        }
+
+        #[test]
+        fn memory_hdel_should_work() {
+            let store: Arc<dyn Storage> = Arc::new(MemTable::new());
+            test_hdel(store);
+        }
+
+        #[test]
+        fn memory_hmset_should_work() {
+            let store: Arc<dyn Storage> = Arc::new(MemTable::new());
+            test_hmset(store);
+        }
+
+        #[test]
+        fn memory_hmget_show_work() {
+            let store: Arc<dyn Storage> = Arc::new(MemTable::new());
+            test_hmget(store);
+        }
+
+        #[test]
+        fn memory_hmget_with_non_exist_key_should_return_default() {
+            let store: Arc<dyn Storage> = Arc::new(MemTable::new());
+            test_hmget_with_non_exist_key(store);
+        }
+
+        #[test]
+        fn memory_hmdel_should_work() {
+            let store: Arc<dyn Storage> = Arc::new(MemTable::new());
+            test_hmdel(store);
+        }
+
+        #[test]
+        fn memory_hexist_should_work() {
+            let store: Arc<dyn Storage> = Arc::new(MemTable::new());
+            test_hexist(store);
+        }
+
+        #[test]
+        fn memory_hmexist_should_work() {
+            let store: Arc<dyn Storage> = Arc::new(MemTable::new());
+            test_hmexist(store);
+        }
+    }
+
+    mod sled {
+        use super::*;
+
+        #[test]
+        fn sled_hset_should_work() {
+            let store: Arc<dyn Storage> = Arc::new(get_sled_store());
+            test_hset(store);
+        }
+
+        #[test]
+        fn sled_hget_should_work() {
+            let store: Arc<dyn Storage> = Arc::new(get_sled_store());
+            test_hget(store);
+        }
+
+        #[test]
+        fn sled_hget_with_non_exist_key_should_return_404() {
+            let store: Arc<dyn Storage> = Arc::new(get_sled_store());
+            test_hget_with_404(store);
+        }
+
+        #[test]
+        fn sled_hgetall_should_work() {
+            let store: Arc<dyn Storage> = Arc::new(get_sled_store());
+            test_hgetall(store);
+        }
+
+        #[test]
+        fn sled_hdel_should_work() {
+            let store: Arc<dyn Storage> = Arc::new(get_sled_store());
+            test_hdel(store);
+        }
+
+        #[test]
+        fn sled_hmset_should_work() {
+            let store: Arc<dyn Storage> = Arc::new(get_sled_store());
+            test_hmset(store);
+        }
+
+        #[test]
+        fn sled_hmget_show_work() {
+            let store: Arc<dyn Storage> = Arc::new(get_sled_store());
+            test_hmget(store);
+        }
+
+        #[test]
+        fn sled_hmget_with_non_exist_key_should_return_default() {
+            let store: Arc<dyn Storage> = Arc::new(get_sled_store());
+            test_hmget_with_non_exist_key(store);
+        }
+
+        #[test]
+        fn sled_hmdel_should_work() {
+            let store: Arc<dyn Storage> = Arc::new(get_sled_store());
+            test_hmdel(store);
+        }
+
+        #[test]
+        fn sled_hexist_should_work() {
+            let store: Arc<dyn Storage> = Arc::new(get_sled_store());
+            test_hexist(store);
+        }
+
+        #[test]
+        fn sled_hmexist_should_work() {
+            let store: Arc<dyn Storage> = Arc::new(get_sled_store());
+            test_hmexist(store);
+        }
+    }
+
+    fn test_hset(store: Arc<dyn Storage>) {
         let cmd = CommandRequest::new_hset("t1", "hello", "world".into());
         let res = dispatch(cmd.clone(), &store);
         assert_res_ok(res, &[Value::default()], &[]);
@@ -133,9 +271,7 @@ mod tests {
         assert_res_ok(res, &["world".into()], &[]);
     }
 
-    #[test]
-    fn hget_should_work() {
-        let store: Arc<dyn Storage> = Arc::new(MemTable::new());
+    fn test_hget(store: Arc<dyn Storage>) {
         let cmd = CommandRequest::new_hset("score", "u1", 10.into());
         dispatch(cmd, &store);
         let cmd = CommandRequest::new_hget("score", "u1");
@@ -143,17 +279,13 @@ mod tests {
         assert_res_ok(res, &[10.into()], &[]);
     }
 
-    #[test]
-    fn hget_with_non_exist_key_should_return_404() {
-        let store: Arc<dyn Storage> = Arc::new(MemTable::new());
+    fn test_hget_with_404(store: Arc<dyn Storage>) {
         let cmd = CommandRequest::new_hget("score", "u1");
         let res = dispatch(cmd, &store);
         assert_res_error(res, 404, "Not found");
     }
 
-    #[test]
-    fn hgetall_should_work() {
-        let store: Arc<dyn Storage> = Arc::new(MemTable::new());
+    fn test_hgetall(store: Arc<dyn Storage>) {
         let cmds = vec![
             CommandRequest::new_hset("score", "u1", 10.into()),
             CommandRequest::new_hset("score", "u2", 8.into()),
@@ -174,9 +306,7 @@ mod tests {
         assert_res_ok(res, &[], pairs);
     }
 
-    #[test]
-    fn hdel_should_work() {
-        let store: Arc<dyn Storage> = Arc::new(MemTable::new());
+    fn test_hdel(store: Arc<dyn Storage>) {
         let cmd = CommandRequest::new_hset("score", "u1", 10.into());
         dispatch(cmd, &store);
 
@@ -186,9 +316,7 @@ mod tests {
         assert_res_ok(res, &[10.into()], &[]);
     }
 
-    #[test]
-    fn hmset_should_work() {
-        let store: Arc<dyn Storage> = Arc::new(MemTable::new());
+    fn test_hmset(store: Arc<dyn Storage>) {
         let cmd = CommandRequest::new_hmset(
             "t1",
             vec![
@@ -204,9 +332,7 @@ mod tests {
         assert_res_ok(res, &[Value::default(), Value::default()], &[]);
     }
 
-    #[test]
-    fn hmget_show_work() {
-        let store: Arc<dyn Storage> = Arc::new(MemTable::new());
+    fn test_hmget(store: Arc<dyn Storage>) {
         let cmd = CommandRequest::new_hmset(
             "score",
             vec![
@@ -224,9 +350,7 @@ mod tests {
         assert_res_ok(res, &[10.into(), 8.into(), 11.into()], &[]);
     }
 
-    #[test]
-    fn hmget_with_non_exist_key_should_return_default() {
-        let store: Arc<dyn Storage> = Arc::new(MemTable::new());
+    fn test_hmget_with_non_exist_key(store: Arc<dyn Storage>) {
         let cmd = CommandRequest::new_hmget("score", vec!["u1", "u2", "u3"]);
         let res = dispatch(cmd, &store);
 
@@ -237,9 +361,7 @@ mod tests {
         );
     }
 
-    #[test]
-    fn hmdel_should_work() {
-        let store: Arc<dyn Storage> = Arc::new(MemTable::new());
+    fn test_hmdel(store: Arc<dyn Storage>) {
         let cmd = CommandRequest::new_hmset(
             "score",
             vec![
@@ -265,9 +387,7 @@ mod tests {
         );
     }
 
-    #[test]
-    fn hexist_should_work() {
-        let store: Arc<dyn Storage> = Arc::new(MemTable::new());
+    fn test_hexist(store: Arc<dyn Storage>) {
         let s_cmd = CommandRequest::new_hexist("t1", "hello");
         let res = dispatch(s_cmd.clone(), &store);
 
@@ -281,9 +401,7 @@ mod tests {
         assert_eq!(res.status, 200);
     }
 
-    #[test]
-    fn hmexist_should_work() {
-        let store: Arc<dyn Storage> = Arc::new(MemTable::new());
+    fn test_hmexist(store: Arc<dyn Storage>) {
         let cmd = CommandRequest::new_hmset(
             "score",
             vec![

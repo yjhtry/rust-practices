@@ -146,6 +146,8 @@ mod tests {
 
     mod sled_table {
 
+        use crate::get_sled_store;
+
         use super::*;
 
         #[test]
@@ -161,13 +163,6 @@ mod tests {
         #[test]
         fn sled_get_iter_should_work() {
             test_get_iter(get_sled_store());
-        }
-
-        fn get_sled_store() -> SledTable {
-            let config = sled::Config::new().temporary(true);
-            let db = config.open().unwrap();
-
-            SledTable::new(db)
         }
     }
 }

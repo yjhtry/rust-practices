@@ -10,7 +10,11 @@ async fn main() -> Result<()> {
     tracing_subscriber::fmt::init();
     let db = sled::open("temp/sled")?;
 
-    let service: Service = Service::new(SledTable::new(db));
+    let service: Service =
+        Service::new(SledTable::new(db)).fn_before_send(|res| match res.message.as_ref() {
+            "" => info!("Get message is empty!",),
+            message => info!("Get message: {}", message),
+        });
     let addr = "127.0.0.1:9527";
     let listener = TcpListener::bind(addr).await?;
 
