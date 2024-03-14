@@ -28,4 +28,9 @@ pub enum KvError {
 
     #[error("Sled error: {0}")]
     SledError(#[from] sled::Error),
+
+    #[error("Frame error")]
+    FrameError,
+    #[error("Io error")]
+    IoError,
 }

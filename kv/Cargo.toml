@@ -8,6 +8,7 @@ edition = "2021"
 [dependencies]
 bytes = "1.5.0"
 dashmap = "5.5.3"
+flate2 = "1.0.28"
 http = "1.0.0"
 prost = "0.10.4"
 
