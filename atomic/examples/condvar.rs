@@ -1,6 +1,5 @@
 use std::sync::{Arc, Condvar, Mutex};
 use std::thread;
-use std::time::Duration;
 
 fn main() {
     let pair = Arc::new((Mutex::new(false), Condvar::new()));
