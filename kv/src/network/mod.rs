@@ -1,7 +1,9 @@
 mod frame;
+mod tls;
 
 use bytes::BytesMut;
 pub use frame::*;
+pub use tls::*;
 use tokio::io::{AsyncRead, AsyncWrite, AsyncWriteExt};
 
 use crate::{CommandRequest, CommandResponse, KvError, Service};

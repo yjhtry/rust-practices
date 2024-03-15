@@ -1,4 +1,5 @@
 use thiserror::Error;
+use tokio_rustls::rustls;
 
 use crate::Value;
 
@@ -33,6 +34,12 @@ pub enum KvError {
     FrameError,
     #[error("Io error")]
     IoError,
+
+    #[error("TLS error: {0}")]
+    TLSError(#[from] rustls::TLSError),
+
+    #[error("TLS error: {0} {1}")]
+    CertifcateParseError(&'static str, &'static str),
 }
 
 impl From<std::io::Error> for KvError {
