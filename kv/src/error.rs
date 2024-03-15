@@ -34,3 +34,9 @@ pub enum KvError {
     #[error("Io error")]
     IoError,
 }
+
+impl From<std::io::Error> for KvError {
+    fn from(_: std::io::Error) -> Self {
+        KvError::IoError
+    }
+}

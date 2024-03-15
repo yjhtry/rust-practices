@@ -1,6 +1,7 @@
 pub mod abi;
 
 pub use abi::{command_request::RequestData, *};
+use bytes::Bytes;
 use http::StatusCode;
 use prost::Message;
 
@@ -236,6 +237,20 @@ impl From<bool> for CommandResponse {
                 StatusCode::NOT_FOUND.as_u16() as _
             },
             ..Default::default()
+        }
+    }
+}
+
+impl<const N: usize> From<&[u8; N]> for Value {
+    fn from(buf: &[u8; N]) -> Self {
+        Bytes::copy_from_slice(&buf[..]).into()
+    }
+}
+
+impl From<Bytes> for Value {
+    fn from(buf: Bytes) -> Self {
+        Self {
+            value: Some(value::Value::Binary(buf.into())),
         }
     }
 }
