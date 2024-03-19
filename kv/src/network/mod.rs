@@ -1,9 +1,11 @@
 mod frame;
+mod multiplex;
 mod stream;
 mod tls;
 
 pub use frame::*;
 use futures::{SinkExt, StreamExt};
+pub use multiplex::*;
 pub use stream::*;
 pub use tls::*;
 use tokio::io::{AsyncRead, AsyncWrite};
