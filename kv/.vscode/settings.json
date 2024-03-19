@@ -18,6 +18,8 @@
     "HSET",
     "mapref",
     "memtable",
-    "sleddb"
+    "rbuf",
+    "sleddb",
+    "wbuf"
   ]
 }

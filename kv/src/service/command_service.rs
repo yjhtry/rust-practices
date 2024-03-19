@@ -120,7 +120,6 @@ impl CommandService for Hmdel {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::command_request::RequestData;
 
     mod memory {
         use super::*;

@@ -129,7 +129,6 @@ mod tests {
     use tracing::info;
 
     use super::*;
-    use crate::{MemTable, Value};
 
     #[test]
     fn service_should_works() {
@@ -182,7 +181,7 @@ mod tests {
 }
 
 #[cfg(test)]
-use crate::{Kvpair, Value};
+use crate::Value;
 
 // 测试成功返回的结果
 #[cfg(test)]
