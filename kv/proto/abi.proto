@@ -14,6 +14,9 @@ message CommandRequest {
     Hmdel hmdel = 7;
     Hexist hexist = 8;
     Hmexist hmexist = 9;
+    Subscribe subscribe = 10;
+    Unsubscribe unsubscribe = 11;
+    Publish publish = 12;
   }
 }
 
@@ -27,6 +30,20 @@ message CommandResponse {
   repeated Value values = 3;
   // 成功返回的 kv pairs
   repeated Kvpair pairs = 4;
+}
+
+message Subscribe { 
+  string topic = 1;
+}
+
+message Unsubscribe { 
+  string topic = 1;
+  uint32 id = 2;
+}
+
+message Publish {
+  string topic = 1;
+  repeated Value data = 2;
 }
 
 // 从 table 中获取一个 key，返回 value

@@ -264,10 +264,10 @@ mod tests {
     fn test_hset(store: Arc<dyn Storage>) {
         let cmd = CommandRequest::new_hset("t1", "hello", "world".into());
         let res = dispatch(cmd.clone(), &store);
-        assert_res_ok(res, &[Value::default()], &[]);
+        assert_res_ok(&res, &[Value::default()], &[]);
 
         let res = dispatch(cmd, &store);
-        assert_res_ok(res, &["world".into()], &[]);
+        assert_res_ok(&res, &["world".into()], &[]);
     }
 
     fn test_hget(store: Arc<dyn Storage>) {
@@ -275,7 +275,7 @@ mod tests {
         dispatch(cmd, &store);
         let cmd = CommandRequest::new_hget("score", "u1");
         let res = dispatch(cmd, &store);
-        assert_res_ok(res, &[10.into()], &[]);
+        assert_res_ok(&res, &[10.into()], &[]);
     }
 
     fn test_hget_with_404(store: Arc<dyn Storage>) {
@@ -302,7 +302,7 @@ mod tests {
             Kvpair::new("u2", 8.into()),
             Kvpair::new("u3", 11.into()),
         ];
-        assert_res_ok(res, &[], pairs);
+        assert_res_ok(&res, &[], pairs);
     }
 
     fn test_hdel(store: Arc<dyn Storage>) {
@@ -312,7 +312,7 @@ mod tests {
         let cmd = CommandRequest::new_hdel("score", "u1");
         let res = dispatch(cmd, &store);
 
-        assert_res_ok(res, &[10.into()], &[]);
+        assert_res_ok(&res, &[10.into()], &[]);
     }
 
     fn test_hmset(store: Arc<dyn Storage>) {
@@ -328,7 +328,7 @@ mod tests {
 
         let res = dispatch(cmd.clone(), &store);
 
-        assert_res_ok(res, &[Value::default(), Value::default()], &[]);
+        assert_res_ok(&res, &[Value::default(), Value::default()], &[]);
     }
 
     fn test_hmget(store: Arc<dyn Storage>) {
@@ -346,7 +346,7 @@ mod tests {
         let cmd = CommandRequest::new_hmget("score", vec!["u1", "u2", "u3"]);
         let res = dispatch(cmd, &store);
 
-        assert_res_ok(res, &[10.into(), 8.into(), 11.into()], &[]);
+        assert_res_ok(&res, &[10.into(), 8.into(), 11.into()], &[]);
     }
 
     fn test_hmget_with_non_exist_key(store: Arc<dyn Storage>) {
@@ -354,7 +354,7 @@ mod tests {
         let res = dispatch(cmd, &store);
 
         assert_res_ok(
-            res,
+            &res,
             &[Value::default(), Value::default(), Value::default()],
             &[],
         );
@@ -380,7 +380,7 @@ mod tests {
         let res = dispatch(cdm, &store);
 
         assert_res_ok(
-            res,
+            &res,
             &[Value::default(), Value::default(), Value::default()],
             &[],
         );
@@ -425,20 +425,5 @@ mod tests {
         let res = dispatch(cmd, &store);
 
         assert_eq!(res.status, 404);
-    }
-
-    // 从 Request 中得到 Response，目前处理 HGET/HGETALL/HSET
-    fn dispatch(cmd: CommandRequest, store: &Arc<dyn Storage>) -> CommandResponse {
-        match cmd.request_data.unwrap() {
-            RequestData::Hget(v) => v.execute(store),
-            RequestData::Hgetall(v) => v.execute(store),
-            RequestData::Hset(v) => v.execute(store),
-            RequestData::Hdel(v) => v.execute(store),
-            RequestData::Hexist(v) => v.execute(store),
-            RequestData::Hmget(v) => v.execute(store),
-            RequestData::Hmset(v) => v.execute(store),
-            RequestData::Hmexist(v) => v.execute(store),
-            RequestData::Hmdel(v) => v.execute(store),
-        }
     }
 }

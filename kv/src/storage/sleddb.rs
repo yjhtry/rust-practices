@@ -40,7 +40,7 @@ fn sled2kv_res(
     match result {
         Ok(Some(v)) => match v.as_ref().try_into() {
             Ok(v) => Ok(Some(v)),
-            Err(_) => Err(KvError::ConvertError(Value::from(v), "Value")),
+            Err(_) => Err(KvError::ConvertError(Value::from(v).format(), "Value")),
         },
         Ok(None) => Ok(None),
         Err(e) => Err(e.into()),

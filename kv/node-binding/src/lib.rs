@@ -6,6 +6,7 @@ extern crate napi_derive;
 #[macro_use]
 extern crate lazy_static;
 
+use futures::StreamExt;
 use kv::{CommandRequest, MemTable, Service, Value};
 use napi::bindgen_prelude::Either5;
 
@@ -16,9 +17,13 @@ lazy_static! {
 #[napi]
 pub fn hget(table: String, key: String) -> serde_json::Value {
   let cmd = CommandRequest::new_hget(table, key);
-  let res = SVC.execute(cmd);
+  let mut res = SVC.execute(cmd);
 
-  serde_json::json!(res)
+  let data = tokio::runtime::Runtime::new()
+    .unwrap()
+    .block_on(async { res.next().await.unwrap() });
+
+  serde_json::json!(*data)
 }
 
 #[napi]
@@ -36,15 +41,23 @@ pub fn hset(
   };
 
   let cmd = CommandRequest::new_hset(table, key, value);
-  let res = SVC.execute(cmd);
+  let mut res = SVC.execute(cmd);
 
-  serde_json::json!(res)
+  let data = tokio::runtime::Runtime::new()
+    .unwrap()
+    .block_on(async { res.next().await.unwrap() });
+
+  serde_json::json!(*data)
 }
 
 #[napi]
 pub fn h_get_all(table: String) -> serde_json::Value {
   let cmd = CommandRequest::new_hgetall(table);
-  let res = SVC.execute(cmd);
+  let mut res = SVC.execute(cmd);
 
-  serde_json::json!(res)
+  let data = tokio::runtime::Runtime::new()
+    .unwrap()
+    .block_on(async { res.next().await.unwrap() });
+
+  serde_json::json!(*data)
 }

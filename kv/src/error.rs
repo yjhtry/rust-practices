@@ -1,8 +1,6 @@
 use thiserror::Error;
 use tokio_rustls::rustls;
 
-use crate::Value;
-
 #[derive(Error, Debug, PartialEq)]
 pub enum KvError {
     #[error("Not found for table: {0}, key: {1}")]
@@ -12,7 +10,7 @@ pub enum KvError {
     InvalidCommand(String),
 
     #[error("Cannot convert value {0:?} to {1}")]
-    ConvertError(Value, &'static str),
+    ConvertError(String, &'static str),
 
     #[error("Cannot process command {0} with table: {1}, key: {2}. Error: {3}")]
     StorageError(&'static str, String, String, String),

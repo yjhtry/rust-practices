@@ -1,7 +1,5 @@
 use anyhow::Result;
-use async_prost::AsyncProstStream;
-use futures::prelude::*;
-use kv::{CommandRequest, CommandResponse, MemTable, Service};
+use kv::{MemTable, ProstServerStream, Service};
 use tokio::net::TcpListener;
 use tracing::info;
 
@@ -23,13 +21,8 @@ async fn main() -> Result<()> {
         let svc = service.clone();
 
         tokio::spawn(async move {
-            let mut stream =
-                AsyncProstStream::<_, CommandRequest, CommandResponse, _>::from(stream).for_async();
-
-            while let Some(Ok(cmd)) = stream.next().await {
-                let res = svc.execute(cmd);
-                stream.send(res).await.unwrap();
-            }
+            let stream = ProstServerStream::new(stream, svc);
+            tokio::spawn(async move { stream.process().await });
 
             info!("Client {:?} disconnected", addr);
         });
