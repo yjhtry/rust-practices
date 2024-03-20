@@ -1,32 +1,18 @@
+use std::env;
+
 use anyhow::Result;
-use kv::{MemTable, ProstServerStream, Service, TlsServerAcceptor};
-use tokio::net::TcpListener;
-use tracing::info;
+use kv::{start_server_with_config, ServerConfig};
+use tokio::fs;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    tracing_subscriber::fmt::init();
+    let config = match env::var("KV_SERVER_CONFIG") {
+        Ok(path) => fs::read_to_string(&path).await?,
+        Err(_) => include_str!("../fixtures/server.conf").to_string(),
+    };
+    let config: ServerConfig = toml::from_str(&config)?;
 
-    let addr = "127.0.0.1:9527";
+    start_server_with_config(&config).await?;
 
-    let server_cert = include_str!("../fixtures/server.cert");
-    let server_key = include_str!("../fixtures/server.key");
-    let acceptor = TlsServerAcceptor::new(server_cert, server_key, None)?;
-
-    let service = Service::new(MemTable::new());
-    let listener = TcpListener::bind(addr).await?;
-
-    info!("Start listening on {}", addr);
-
-    loop {
-        let tls = acceptor.clone();
-        let (stream, addr) = listener.accept().await?;
-
-        info!("Client {:?} connected", addr);
-
-        let stream = tls.accept(stream).await?;
-
-        let stream = ProstServerStream::new(stream, service.clone());
-        tokio::spawn(async move { stream.process().await });
-    }
+    Ok(())
 }

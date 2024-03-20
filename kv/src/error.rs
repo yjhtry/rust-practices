@@ -6,6 +6,9 @@ pub enum KvError {
     #[error("Not found for table: {0}, key: {1}")]
     NotFound(String, String),
 
+    #[error("Not found: {0}")]
+    NotSubscription(String),
+
     #[error("Cannot parse command: `{0}`")]
     InvalidCommand(String),
 
@@ -38,6 +41,9 @@ pub enum KvError {
 
     #[error("TLS error: {0} {1}")]
     CertifcateParseError(&'static str, &'static str),
+
+    #[error("Parse config error")]
+    ConfigError(#[from] toml::de::Error),
 }
 
 impl From<std::io::Error> for KvError {

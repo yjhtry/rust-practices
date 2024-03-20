@@ -218,7 +218,9 @@ impl From<KvError> for CommandResponse {
         };
 
         match e {
-            KvError::NotFound(_, _) => result.status = StatusCode::NOT_FOUND.as_u16() as _,
+            KvError::NotFound(_, _) | KvError::NotSubscription(_) => {
+                result.status = StatusCode::NOT_FOUND.as_u16() as _
+            }
             KvError::InvalidCommand(_) => result.status = StatusCode::BAD_REQUEST.as_u16() as _,
             _ => {}
         }
@@ -268,6 +270,37 @@ impl Value {
     }
 }
 
+impl CommandRequest {
+    pub fn new_subscribe(name: impl Into<String>) -> Self {
+        Self {
+            request_data: Some(RequestData::Subscribe(Subscribe { topic: name.into() })),
+        }
+    }
+
+    pub fn new_unsubscribe(name: impl Into<String>, id: u32) -> Self {
+        Self {
+            request_data: Some(RequestData::Unsubscribe(Unsubscribe {
+                topic: name.into(),
+                id,
+            })),
+        }
+    }
+
+    pub fn new_publish(name: impl Into<String>, data: Vec<Value>) -> Self {
+        Self {
+            request_data: Some(RequestData::Publish(Publish {
+                topic: name.into(),
+                data,
+            })),
+        }
+    }
+
+    /// 转换成 string 做错误处理
+    pub fn format(&self) -> String {
+        format!("{:?}", self)
+    }
+}
+
 impl CommandResponse {
     pub fn ok() -> Self {
         let mut result = CommandResponse::default();
@@ -276,19 +309,7 @@ impl CommandResponse {
     }
 
     pub fn format(&self) -> String {
-        if !self.message.is_empty() {
-            return self.message.clone();
-        }
-
-        if !self.values.is_empty() {
-            return self.values[0].format();
-        }
-
-        if !self.pairs.is_empty() {
-            return self.pairs[0].key.clone();
-        }
-
-        "None".to_string()
+        format!("{:?}", self)
     }
 }
 

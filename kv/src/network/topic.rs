@@ -6,7 +6,7 @@ use std::sync::{
 use tokio::sync::mpsc;
 use tracing::{debug, info, warn};
 
-use crate::{CommandResponse, Value};
+use crate::{CommandResponse, KvError, Value};
 
 /// topic 里最大存放的数据
 const BROADCAST_CAPACITY: usize = 128;
@@ -23,7 +23,7 @@ pub trait Topic: Send + Sync + 'static {
     /// 订阅某个主题
     fn subscribe(self, name: String) -> mpsc::Receiver<Arc<CommandResponse>>;
     /// 取消对主题的订阅
-    fn unsubscribe(self, name: String, id: u32);
+    fn unsubscribe(self, name: String, id: u32) -> Result<u32, KvError>;
     /// 往主题里发布一个数据
     fn publish(self, name: String, value: Arc<CommandResponse>);
 }
@@ -35,6 +35,26 @@ pub struct Broadcaster {
     topics: DashMap<String, DashSet<u32>>,
     /// 所有的订阅列表
     subscriptions: DashMap<u32, mpsc::Sender<Arc<CommandResponse>>>,
+}
+
+impl Broadcaster {
+    pub fn remove_subscription(&self, name: String, id: u32) -> Option<u32> {
+        if let Some(v) = self.topics.get_mut(&name) {
+            // 在 topics 表里找到 topic 的 subscription id，删除
+            v.remove(&id);
+
+            // 如果这个 topic 为空，则也删除 topic
+            if v.is_empty() {
+                info!("Topic: {:?} is deleted", &name);
+                drop(v);
+                self.topics.remove(&name);
+            }
+        }
+
+        debug!("Subscription {} is removed!", id);
+        // 在 subscription 表中同样删除
+        self.subscriptions.remove(&id).map(|(id, _)| id)
+    }
 }
 
 impl Topic for Arc<Broadcaster> {
@@ -68,44 +88,40 @@ impl Topic for Arc<Broadcaster> {
         rx
     }
 
-    fn unsubscribe(self, name: String, id: u32) {
-        if let Some(v) = self.topics.get_mut(&name) {
-            // 在 topics 表里找到 topic 的 subscription id，删除
-            v.remove(&id);
-
-            // 如果这个 topic 为空，则也删除 topic
-            if v.is_empty() {
-                info!("Topic: {:?} is deleted", &name);
-                drop(v);
-                self.topics.remove(&name);
-            }
+    fn unsubscribe(self, name: String, id: u32) -> Result<u32, KvError> {
+        match self.remove_subscription(name.clone(), id) {
+            Some(id) => Ok(id),
+            None => Err(KvError::NotSubscription(format!("subscription {}", id))),
         }
-
-        debug!("Subscription {} is removed!", id);
-        // 在 subscription 表中同样删除
-        self.subscriptions.remove(&id);
     }
 
     fn publish(self, name: String, value: Arc<CommandResponse>) {
         tokio::spawn(async move {
-            match self.topics.get(&name) {
-                Some(chan) => {
-                    // 复制整个 topic 下所有的 subscription id
-                    // 这里我们每个 id 是 u32，如果一个 topic 下有 10k 订阅，复制的成本
-                    // 也就是 40k 堆内存（外加一些控制结构），所以效率不算差
-                    // 这也是为什么我们用 NEXT_ID 来控制 subscription id 的生成
-                    let chan = chan.value().clone();
+            let mut ids = vec![];
+            if let Some(topic) = self.topics.get(&name) {
+                // 复制整个 topic 下所有的 subscription id
+                // 这里我们每个 id 是 u32，如果一个 topic 下有 10k 订阅，复制的成本
+                // 也就是 40k 堆内存（外加一些控制结构），所以效率不算差
+                // 这也是为什么我们用 NEXT_ID 来控制 subscription id 的生成
 
-                    // 循环发送
-                    for id in chan.into_iter() {
-                        if let Some(tx) = self.subscriptions.get(&id) {
-                            if let Err(e) = tx.send(value.clone()).await {
-                                warn!("Publish to {} failed! error: {:?}", id, e);
-                            }
+                let subscriptions = topic.value().clone();
+                // 尽快释放锁
+                drop(topic);
+
+                // 循环发送
+                for id in subscriptions.into_iter() {
+                    if let Some(tx) = self.subscriptions.get(&id) {
+                        if let Err(e) = tx.send(value.clone()).await {
+                            warn!("Publish to {} failed! error: {:?}", id, e);
+                            // client 中断连接
+                            ids.push(id);
                         }
                     }
                 }
-                None => {}
+            }
+
+            for id in ids {
+                self.remove_subscription(name.clone(), id);
             }
         });
     }
@@ -144,7 +160,7 @@ mod tests {
         assert_res_ok(&res1, &[v.clone()], &[]);
 
         // 如果 subscriber 取消订阅，则收不到新数据
-        b.clone().unsubscribe(lobby.clone(), id1 as _);
+        b.clone().unsubscribe(lobby.clone(), id1 as _).unwrap();
 
         // publish
         let v: Value = "world".into();

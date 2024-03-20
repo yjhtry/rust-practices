@@ -281,7 +281,7 @@ mod tests {
     fn test_hget_with_404(store: Arc<dyn Storage>) {
         let cmd = CommandRequest::new_hget("score", "u1");
         let res = dispatch(cmd, &store);
-        assert_res_error(res, 404, "Not found");
+        assert_res_error(&res, 404, "Not found");
     }
 
     fn test_hgetall(store: Arc<dyn Storage>) {

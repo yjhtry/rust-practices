@@ -221,7 +221,7 @@ pub fn assert_res_ok(res: &CommandResponse, values: &[Value], pairs: &[Kvpair]) 
 
 // 测试失败返回的结果
 #[cfg(test)]
-pub fn assert_res_error(res: CommandResponse, code: u32, msg: &str) {
+pub fn assert_res_error(res: &CommandResponse, code: u32, msg: &str) {
     assert_eq!(res.status, code);
     assert!(res.message.contains(msg));
     assert_eq!(res.values, &[]);

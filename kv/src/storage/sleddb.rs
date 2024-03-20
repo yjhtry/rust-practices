@@ -1,4 +1,4 @@
-use std::ops::Deref;
+use std::{ops::Deref, path::Path};
 
 use prost::Message;
 use sled::IVec;
@@ -9,6 +9,10 @@ pub struct SledTable(sled::Db);
 
 impl SledTable {
     pub fn new(db: sled::Db) -> Self {
+        Self(db)
+    }
+    pub fn open_path(db: impl AsRef<Path>) -> Self {
+        let db = sled::open(db).unwrap();
         Self(db)
     }
 }
