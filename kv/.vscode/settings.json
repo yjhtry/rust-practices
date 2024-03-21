@@ -20,6 +20,7 @@
     "memtable",
     "rbuf",
     "sleddb",
-    "wbuf"
+    "wbuf",
+    "yamux"
   ]
 }
