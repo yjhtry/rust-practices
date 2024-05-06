@@ -65,5 +65,5 @@ async function printBody(res: Response) {
     return;
   }
 
-  console.log(pc.default(await res.text()));
+  console.log(pc.cyan(await res.text()));
 }

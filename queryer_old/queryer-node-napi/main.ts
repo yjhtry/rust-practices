@@ -7,7 +7,7 @@ function test_query() {
   let sql = `SELECT location name, total_cases, new_cases, total_deaths, new_deaths 
     FROM ${url} where new_deaths >= 200 ORDER BY new_cases DESC`
 
-  console.log(query(sql, 'csv'))
+  console.log(query(sql, 'json'))
 }
 
 test_query()
