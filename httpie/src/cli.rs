@@ -5,7 +5,7 @@ use clap::{Parser, Subcommand};
 use reqwest::Url;
 
 #[derive(Parser, Debug)]
-#[clap(version = "1.0.0", author = "yjhtry <860622588@.com>")]
+#[clap(version = "1.0.0", author = "junhao.yu <dddd>")]
 pub struct Args {
     #[clap(subcommand)]
     pub subcmd: SubCommand,

@@ -1,5 +1,9 @@
 package main
 
+import (
+	"go-cli/httpie/cli"
+)
+
 func main() {
-	println("go httpie")
+	cli.Run()
 }
