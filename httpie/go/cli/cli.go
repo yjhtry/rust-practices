@@ -26,21 +26,7 @@ func Run() {
 				Action: func(cCtx *cli.Context) error {
 					url := cCtx.Args().First()
 
-					res, err := http.Get(url)
-
-					if err != nil {
-						fmt.Println("Fetch Error: ", err)
-
-						return err
-					}
-
-					defer res.Body.Close()
-
-					printStatus(res)
-					printHeaders(res)
-					printBody(res)
-
-					return nil
+					return httpIeHandle(url)
 				},
 			},
 			{
@@ -48,8 +34,9 @@ func Run() {
 				Aliases: []string{"p"},
 				Usage:   "print url response by post",
 				Action: func(cCtx *cli.Context) error {
-					fmt.Println("completed task: ", cCtx.Args().First())
-					return nil
+					url := cCtx.Args().First()
+
+					return httpIeHandle(url)
 				},
 			},
 		},
@@ -60,7 +47,28 @@ func Run() {
 	}
 }
 
-func PrettyString(str string) (string, error) {
+func httpIeHandle(url string) error {
+
+	res, err := http.Get(url)
+
+	// 错误处理
+	if err != nil {
+		fmt.Println("Fetch Error: ", err)
+
+		return err
+	}
+
+	// 资源释放
+	defer res.Body.Close()
+
+	printStatus(res)
+	printHeaders(res)
+	printBody(res)
+
+	return nil
+}
+
+func prettyString(str string) (string, error) {
 	var prettyJSON bytes.Buffer
 
 	if err := json.Indent(&prettyJSON, []byte(str), "", "    "); err != nil {
@@ -96,6 +104,7 @@ func printHeaders(res *http.Response) {
 
 	fmt.Println()
 }
+
 func printBody(res *http.Response) {
 	body, err := io.ReadAll(res.Body)
 
@@ -107,7 +116,7 @@ func printBody(res *http.Response) {
 	stringBody := string(body)
 
 	if strings.Contains(res.Header.Get("Content-Type"), "application/json") {
-		stringJson, err := PrettyString(stringBody)
+		stringJson, err := prettyString(stringBody)
 
 		if err == nil {
 			stringBody = stringJson

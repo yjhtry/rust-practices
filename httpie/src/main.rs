@@ -22,7 +22,7 @@ async fn handle_get(args: cli::Get) -> Result<()> {
     let res = reqwest::get(&args.url).await?;
 
     print_response(res).await;
-    Ok(())
+    return Ok(());
 }
 
 async fn handle_post(args: cli::Post) -> Result<()> {

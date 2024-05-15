@@ -2,21 +2,28 @@ const pc = require('picocolors');
 const mime = require('mime-types');
 
 export async function handleGet(url: string) {
-  const res = await fetch(url);
+  try {
+    const res = await fetch(url);
 
-  printResponse(res);
+    printResponse(res);
 
+  } catch (error) {
+    console.log(`Fetch error: `, (error as any).message)
+  }
 }
 
 export async function handlePost(url: string, body: string[]) {
-  const data = parseKvPairs(body);
+  try {
+    const data = parseKvPairs(body);
+    const res = await fetch(url, {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
 
-  const res = await fetch(url, {
-    method: 'POST',
-    body: JSON.stringify(data)
-  });
-
-  printResponse(res);
+    printResponse(res);
+  } catch (error) {
+    console.log(`Fetch error: `, (error as any).message) 
+  }
 }
 
 export function parseKvPairs(body: string[]) {
