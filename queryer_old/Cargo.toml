@@ -1,4 +1,4 @@
-workspace = { members = ["queryer-node", "queryer-node-napi","queryer-tauri/src-tauri"] }
+workspace = { members = ["queryer-node-napi","queryer-tauri/src-tauri"] }
 
 [package]
 name = "queryer"
