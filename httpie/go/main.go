@@ -1,8 +1,8 @@
 package main
 
-// import "go-cli/httpie/cli"
+import "go-cli/httpie/cli"
 
 func main() {
-	// cli.Run()
-	RunSumDemo()
+	cli.Run()
+	// RunSumDemo()
 }
