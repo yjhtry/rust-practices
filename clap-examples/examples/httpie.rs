@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 use anyhow::Result;
 use clap::{command, Parser};
+use reqwest::{Response, StatusCode};
 
 #[derive(Debug, Parser)]
 struct Cli {
@@ -43,26 +44,45 @@ fn parser_body(s: &str) -> Result<HashMap<String, String>> {
     Ok(map)
 }
 
-fn main() {
+#[tokio::main]
+async fn main() -> Result<()> {
     let cli = Cli::parse();
 
     match cli.run {
-        Run::Get(get) => handle_get(get),
-        Run::Post(post) => handle_post(post),
+        Run::Get(get) => handle_get(get).await?,
+        Run::Post(post) => handle_post(post).await?,
     }
+
+    Ok(())
 }
 
-fn handle_get(get: Get) {
-    let req = reqwest::blocking::get(&get.url).unwrap();
+async fn handle_get(get: Get) -> Result<()> {
+    let res = reqwest::get(&get.url).await.unwrap();
 
-    println!("{:?}", req.text().unwrap());
+    colorful_print(res);
+
+    Ok(())
 }
 
-fn handle_post(post: Post) {
-    let client = reqwest::blocking::ClientBuilder::new().build().unwrap();
-    let res = client.post(&post.url).json(&post.body).send().unwrap();
+async fn handle_post(post: Post) -> Result<()> {
+    let client = reqwest::ClientBuilder::new().build()?;
+    let res = client.post(&post.url).json(&post.body).send().await?;
 
-    println!("post body: {:?}", post.body);
+    colorful_print(res);
+
+    Ok(())
 
     // println!("{:?}", res.text().unwrap());
+}
+
+fn colorful_print(res: Response) {
+    print_status_line(res);
+}
+
+fn print_status_line(res: Response) {
+    match (res.status(), res.version()) {
+        (StatusCode::OK, version) => println!("{:?} {}", version, StatusCode::OK),
+        (StatusCode::NOT_FOUND, version) => println!("{:?} {}", version, StatusCode::NOT_FOUND),
+        (code, version) => println!("{:?} {}", version, code),
+    }
 }
