@@ -8,5 +8,8 @@ description = "clap examples description"
 [dependencies]
 anyhow = "1.0.86"
 clap = { version = "4.5.4", features = ["derive"] }
+colored = "2.1.0"
+jsonxf = "1.1.1"
 reqwest = { version = "0.12.4", features = ["blocking", "json"] }
+syntect = "5.2.0"
 tokio = { version = "1.37.0", features = ["macros"] }
