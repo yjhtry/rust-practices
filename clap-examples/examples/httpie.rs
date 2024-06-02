@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use anyhow::Result;
 use clap::{command, Parser};
 use colored::*;
-use reqwest::header::HeaderMap;
+use reqwest::header::{HeaderMap, CONTENT_TYPE};
 use reqwest::{Response, StatusCode, Url};
 use std::fmt::Write as _;
 use std::io::Write as _;
@@ -139,24 +139,28 @@ fn print_headers(res: &Response) {
 }
 
 fn print_body(headers: &HeaderMap, body: String) {
-    match headers.get("content-type") {
-        Some(t) if t.to_str().unwrap().contains("application/json") => {
-            // println!("{}", body);
-            print_with_theme(jsonxf::pretty_print(&body).unwrap().as_str());
-        }
-        _ => print_with_theme(body.as_str()),
-    }
+    let content_type = headers
+        .get(CONTENT_TYPE)
+        .map_or("plain", |h| h.to_str().unwrap_or("plain"));
+
+    let (body, extension) = match content_type {
+        "application/json" => (jsonxf::pretty_print(&body).unwrap(), "json"),
+        "text/html" => (body, "html"),
+        _ => (body, "txt"),
+    };
+
+    print_with_theme(&body, extension);
 }
 
-fn print_with_theme(s: &str) {
+fn print_with_theme(s: &str, extension: &str) {
     // Load these once at the start of your program
     let ps = SyntaxSet::load_defaults_newlines();
     let ts = ThemeSet::load_defaults();
 
     let syntax = ps
-        .find_syntax_by_first_line(s)
-        .or(ps.find_syntax_by_extension("json"))
-        .unwrap();
+        .find_syntax_by_extension(extension)
+        .unwrap_or(ps.find_syntax_plain_text());
+
     let mut h = HighlightLines::new(syntax, &ts.themes["base16-ocean.dark"]);
 
     for line in LinesWithEndings::from(s) {
