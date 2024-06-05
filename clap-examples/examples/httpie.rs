@@ -154,7 +154,7 @@ fn print_body(headers: &HeaderMap, body: String) {
 
 fn print_with_theme(s: &str, extension: &str) {
     // Load these once at the start of your program
-    let ps = SyntaxSet::load_defaults_newlines();
+    let ps = SyntaxSet::load_defaults_nonewlines();
     let ts = ThemeSet::load_defaults();
 
     let syntax = ps
